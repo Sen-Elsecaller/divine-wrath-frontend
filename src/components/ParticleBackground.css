@@ -1,0 +1,146 @@
+.particle-background {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* Container */
+.particles-container {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+}
+
+/* Color variants */
+.particles-container.particles--divine {
+  --particle-color: var(--color-gold);
+}
+
+.particles-container.particles--mortal {
+  --particle-color: var(--color-danger);
+}
+
+.particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  background: transparent;
+  border-radius: 50%;
+}
+
+/*
+ * Particle positions spread across 200vh (0-100vh visible, 100-200vh below screen)
+ * When animation moves -100vh, particles from bottom half appear at top
+ */
+
+/* Layer 1 - Base size particles, slower */
+.particles--layer-1 {
+  box-shadow:
+    /* Visible area (0-100vh) */
+    25vw 5vh 0 0 var(--particle-color),
+    75vw 10vh 0 0 var(--particle-color),
+    45vw 15vh 0 0 var(--particle-color),
+    90vw 20vh 0 0 var(--particle-color),
+    10vw 25vh 0 0 var(--particle-color),
+    60vw 30vh 0 0 var(--particle-color),
+    30vw 35vh 0 0 var(--particle-color),
+    85vw 40vh 0 0 var(--particle-color),
+    15vw 45vh 0 0 var(--particle-color),
+    55vw 50vh 0 0 var(--particle-color),
+    5vw 55vh 0 0 var(--particle-color),
+    40vw 60vh 0 0 var(--particle-color),
+    70vw 65vh 0 0 var(--particle-color),
+    20vw 70vh 0 0 var(--particle-color),
+    95vw 75vh 0 0 var(--particle-color),
+    35vw 80vh 0 0 var(--particle-color),
+    65vw 85vh 0 0 var(--particle-color),
+    50vw 90vh 0 0 var(--particle-color),
+    80vw 95vh 0 0 var(--particle-color),
+    12vw 98vh 0 0 var(--particle-color),
+    /* Below screen (100-200vh) - will scroll into view */
+    48vw 105vh 0 0 var(--particle-color),
+    78vw 110vh 0 0 var(--particle-color),
+    18vw 115vh 0 0 var(--particle-color),
+    88vw 120vh 0 0 var(--particle-color),
+    8vw 125vh 0 0 var(--particle-color),
+    58vw 130vh 0 0 var(--particle-color),
+    28vw 135vh 0 0 var(--particle-color),
+    92vw 140vh 0 0 var(--particle-color),
+    38vw 145vh 0 0 var(--particle-color),
+    68vw 150vh 0 0 var(--particle-color),
+    2vw 155vh 0 0 var(--particle-color),
+    52vw 160vh 0 0 var(--particle-color),
+    82vw 165vh 0 0 var(--particle-color),
+    22vw 170vh 0 0 var(--particle-color),
+    72vw 175vh 0 0 var(--particle-color),
+    42vw 180vh 0 0 var(--particle-color),
+    98vw 185vh 0 0 var(--particle-color),
+    32vw 190vh 0 0 var(--particle-color),
+    62vw 195vh 0 0 var(--particle-color),
+    15vw 198vh 0 0 var(--particle-color);
+  animation: float-up 30s linear infinite;
+}
+
+/* Layer 2 - Larger particles, slightly faster */
+.particles--layer-2 {
+  width: 6px;
+  height: 6px;
+  box-shadow:
+    /* Visible area */
+    18vw 3vh 0 0 var(--particle-color),
+    68vw 8vh 0 0 var(--particle-color),
+    38vw 13vh 0 0 var(--particle-color),
+    88vw 18vh 0 0 var(--particle-color),
+    8vw 23vh 0 0 var(--particle-color),
+    52vw 28vh 0 0 var(--particle-color),
+    28vw 33vh 0 0 var(--particle-color),
+    78vw 38vh 0 0 var(--particle-color),
+    48vw 43vh 0 0 var(--particle-color),
+    93vw 48vh 0 0 var(--particle-color),
+    13vw 53vh 0 0 var(--particle-color),
+    63vw 58vh 0 0 var(--particle-color),
+    33vw 63vh 0 0 var(--particle-color),
+    83vw 68vh 0 0 var(--particle-color),
+    3vw 73vh 0 0 var(--particle-color),
+    58vw 78vh 0 0 var(--particle-color),
+    23vw 83vh 0 0 var(--particle-color),
+    73vw 88vh 0 0 var(--particle-color),
+    43vw 93vh 0 0 var(--particle-color),
+    96vw 98vh 0 0 var(--particle-color),
+    /* Below screen */
+    16vw 103vh 0 0 var(--particle-color),
+    66vw 108vh 0 0 var(--particle-color),
+    36vw 113vh 0 0 var(--particle-color),
+    86vw 118vh 0 0 var(--particle-color),
+    6vw 123vh 0 0 var(--particle-color),
+    56vw 128vh 0 0 var(--particle-color),
+    26vw 133vh 0 0 var(--particle-color),
+    76vw 138vh 0 0 var(--particle-color),
+    46vw 143vh 0 0 var(--particle-color),
+    91vw 148vh 0 0 var(--particle-color),
+    11vw 153vh 0 0 var(--particle-color),
+    61vw 158vh 0 0 var(--particle-color),
+    31vw 163vh 0 0 var(--particle-color),
+    81vw 168vh 0 0 var(--particle-color),
+    1vw 173vh 0 0 var(--particle-color),
+    51vw 178vh 0 0 var(--particle-color),
+    21vw 183vh 0 0 var(--particle-color),
+    71vw 188vh 0 0 var(--particle-color),
+    41vw 193vh 0 0 var(--particle-color),
+    94vw 198vh 0 0 var(--particle-color);
+  animation: float-up 22s linear infinite;
+}
+
+/* Seamless floating animation */
+@keyframes float-up {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100vh);
+  }
+}
