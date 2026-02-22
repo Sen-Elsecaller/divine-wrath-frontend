@@ -340,6 +340,7 @@ export function Game({
         isGod={isGod}
         highlightedRow={highlightedRow}
         highlightedColumn={highlightedColumn}
+        selectedTargetId={room.phase === 'claiming' && isMortal ? selectedTargetId : null}
       />
 
       {/* Phase-specific content */}

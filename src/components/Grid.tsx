@@ -33,6 +33,7 @@ interface GridProps {
   isGod?: boolean;
   highlightedRow?: number | null;
   highlightedColumn?: number | null;
+  selectedTargetId?: string | null; // ID del jugador seleccionado como target de claim
 }
 
 // Convert cell number (1-9) to row,col coordinates (0,0 - 2,2)
@@ -62,6 +63,7 @@ export function Grid({
   isGod = false,
   highlightedRow,
   highlightedColumn,
+  selectedTargetId,
 }: GridProps) {
   const cells = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -162,7 +164,7 @@ export function Grid({
                       size="xs"
                       isDead
                     />
-                    <span className="text-(--color-danger) text-[8px] font-medium truncate max-w-[50px]">
+                    <span className="text-(--color-danger) text-[10px] font-medium truncate max-w-[50px]">
                       {deadPlayerHere.name.toUpperCase().slice(0, 5)}
                     </span>
                   </div>
@@ -182,15 +184,21 @@ export function Grid({
                 {isMyPosition && !isAttacked && (
                   <div className="flex flex-col items-center gap-0.5">
                     <Avatar config={myAvatar || DEFAULT_AVATAR} size="xs" />
-                    <span className="text-(--color-gold) text-[8px] font-semibold">YOU</span>
+                    <span className="text-(--color-gold) text-[10px] font-semibold">YOU</span>
                   </div>
                 )}
 
                 {/* Other mortal's position indicator */}
                 {otherMortalHere && !isAttacked && !isMyPosition && (
-                  <div className="flex flex-col items-center gap-0.5">
+                  <div className={clsx(
+                    "flex flex-col items-center gap-0.5 transition-transform duration-200",
+                    selectedTargetId === otherMortalHere.id && "scale-125"
+                  )}>
                     <Avatar config={otherMortalHere.avatar || DEFAULT_AVATAR} size="xs" />
-                    <span className="text-(--color-gold) text-[8px] font-medium truncate max-w-[50px]">
+                    <span className={clsx(
+                      "text-(--color-gold) font-medium truncate max-w-[50px]",
+                      selectedTargetId === otherMortalHere.id ? "text-[11px]" : "text-[10px]"
+                    )}>
                       {otherMortalHere.name.toUpperCase().slice(0, 5)}
                     </span>
                   </div>
