@@ -10,6 +10,7 @@ interface LobbyProps {
   error: string | null;
   onCreateRoom: (playerName: string, avatar?: AvatarConfig) => void;
   onJoinRoom: (roomCode: string, playerName: string, avatar?: AvatarConfig) => void;
+  onLeaveRoom: () => void;
   onToggleReady: () => void;
   onStartGame: () => void;
   onSetRoundConfig: (totalRounds: number) => void;
@@ -24,6 +25,7 @@ export function Lobby({
   error,
   onCreateRoom,
   onJoinRoom,
+  onLeaveRoom,
   onToggleReady,
   onStartGame,
   onSetRoundConfig,
@@ -112,6 +114,7 @@ export function Lobby({
                 onClick={() => onSetRoundConfig(n)}
                 className={clsx(
                   'w-10 h-10 rounded-lg font-mono font-semibold transition-all border',
+                  'flex items-center justify-center',
                   room.totalRounds === n
                     ? 'bg-(--color-gold)/20 border-(--color-gold) text-(--color-gold)'
                     : 'bg-(--color-surface) border-(--color-border) text-(--color-ink-muted) hover:border-(--color-gold)/50'
@@ -219,6 +222,14 @@ export function Lobby({
               : 'Waiting for all players to be ready'}
           </p>
         )}
+
+        {/* Leave room button */}
+        <button
+          onClick={() => transitionTo(onLeaveRoom)}
+          className="px-4 py-2 rounded-lg border border-(--color-border) bg-(--color-surface) text-(--color-ink-muted) hover:border-(--color-danger)/50 hover:text-(--color-danger) text-sm transition-all self-center"
+        >
+          Leave Room
+        </button>
       </div>
     );
   }
@@ -230,13 +241,6 @@ export function Lobby({
         'flex flex-col gap-6',
         isExiting ? 'animate-slide-out-to-bottom' : 'animate-slide-in-from-top'
       )}>
-        <button
-          onClick={() => handleModeChange('menu')}
-          className="text-(--color-ink-muted) hover:text-(--color-ink) text-sm bg-transparent border-none p-0 cursor-pointer self-start"
-        >
-          ← Back
-        </button>
-
         <h2 className="text-xl font-bold text-center uppercase tracking-wider">
           Join Room
         </h2>
@@ -281,6 +285,14 @@ export function Lobby({
             </p>
           )}
         </div>
+
+        {/* Back button */}
+        <button
+          onClick={() => handleModeChange('menu')}
+          className="px-4 py-2 rounded-lg border border-(--color-border) bg-(--color-surface) text-(--color-ink-muted) hover:border-(--color-danger)/50 hover:text-(--color-danger) text-sm transition-all self-center"
+        >
+          Back
+        </button>
       </div>
     );
   }

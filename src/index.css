@@ -290,6 +290,36 @@ select option {
   }
 }
 
+@keyframes score-delta-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes score-delta-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+
+.animate-score-delta-enter {
+  animation: score-delta-enter 0.25s ease-out forwards;
+}
+
+.animate-score-delta-exit {
+  animation: score-delta-exit 0.25s ease-in forwards;
+}
+
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }

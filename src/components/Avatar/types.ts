@@ -32,6 +32,9 @@ export const AVATAR_SIZES: Record<AvatarSize, number> = {
 export const AVATAR_COLORS = [
   '#c9a227', // Gold (primary)
   '#00d4ff', // Cyan
+  '#e879a5', // Rosa dusty
+  '#4ade80', // Verde esmeralda
+  '#f0ead6', // Marfil cálido
 ] as const;
 
 // Eyebrow styles available

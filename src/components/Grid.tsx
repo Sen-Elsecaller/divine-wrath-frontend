@@ -106,7 +106,7 @@ export function Grid({
                 {
                   // Default state
                   'bg-(--color-grid-cell)':
-                    !disabled && !isMyPosition && !isSelected && !isHighlighted && !isAttacked && !otherMortalHere,
+                    !disabled && !isSelected && !isHighlighted && !isAttacked,
                   // Solo cursor pointer y hover si es interactivo
                   'cursor-pointer hover:bg-(--color-grid-cell-hover)':
                     canInteract && !isMyPosition && !isSelected && !isHighlighted,
@@ -123,13 +123,6 @@ export function Grid({
                   'bg-(--color-gold)/20 ring-2 ring-inset ring-(--color-gold)':
                     isSelected && !isGod,
 
-                  // My position (mortal only)
-                  'bg-(--color-gold)/15':
-                    isMyPosition && !isAttacked,
-
-                  // Other mortal's position
-                  'bg-(--color-gold)/8':
-                    otherMortalHere && !isAttacked && !isMyPosition,
 
                   // Attacked and missed
                   'bg-(--color-bg) opacity-40 cursor-not-allowed':

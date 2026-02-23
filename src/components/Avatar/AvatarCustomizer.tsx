@@ -85,7 +85,7 @@ export function AvatarCustomizer({
                 'p-1 rounded-lg transition-all border',
                 avatar.eyebrows === style
                   ? 'border-(--color-gold) bg-(--color-gold)/20'
-                  : 'border-(--color-border) hover:border-(--color-gold)/50'
+                  : 'border-transparent bg-transparent'
               )}
               aria-label={`Select ${style} expression`}
             >

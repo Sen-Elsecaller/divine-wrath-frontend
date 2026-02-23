@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useSocket } from './hooks/useSocket';
+import { useAudio } from './hooks/useAudio';
 import { Lobby } from './components/Lobby';
 import { Game } from './components/Game';
 import { RoundTransition } from './components/RoundTransition';
 import { ParticleBackground } from './components/ParticleBackground';
+import { VolumeControl } from './components/VolumeControl';
 
 export default function App() {
   const autoJoinedRef = useRef(false);
@@ -18,9 +20,11 @@ export default function App() {
     roundResult,
     createRoom,
     joinRoom,
+    leaveRoom,
     toggleReady,
     setRoundConfig,
     submitGodChoice,
+    readyForNextRound,
     startGame,
     selectPosition,
     submitClaim,
@@ -29,6 +33,21 @@ export default function App() {
     submitClaimBlockchain,
     clearBlockchainResult,
   } = useSocket();
+
+  const { playTrack, volume, setVolume, isMuted, tryResume } = useAudio();
+
+  // Determine which track to play based on game state
+  useEffect(() => {
+    if (!room || room.phase === 'lobby') {
+      playTrack('main-menu');
+    } else if (room.phase === 'ended') {
+      playTrack('endgame');
+    } else if (room.currentRound <= 2) {
+      playTrack('earlygame');
+    } else {
+      playTrack('endgame');
+    }
+  }, [room?.phase, room?.currentRound, playTrack]);
 
   // Auto-join from URL params (for quick testing)
   useEffect(() => {
@@ -84,52 +103,63 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative" onClick={tryResume}>
       {/* Background particles */}
       <ParticleBackground variant={getBackgroundVariant()} />
 
+
       {/* Header - only visible when in a room */}
       {room && (
-        <header className="border-b border-(--color-border) py-4 animate-header-expand overflow-hidden">
-          <div className="max-w-md mx-auto px-4 flex items-center justify-between">
-            {/* Left: Title */}
-            <h1 className="text-base font-bold flex items-center gap-2 font-[var(--font-display)]">
-              <span className="text-(--color-gold)">⚡</span>
-              <span className="text-(--color-gold) tracking-wide">DIVINE WRATH</span>
+        <header className="border-b border-(--color-border) py-3 animate-header-expand">
+          <div className="max-w-md mx-auto px-4 flex items-center justify-between relative">
+            {/* Left: Title (stacked) */}
+            <h1 className="flex items-center gap-1.5 font-[var(--font-display)]">
+              <span className="text-(--color-gold) text-lg">⚡</span>
+              <div className="flex flex-col leading-none">
+                <span className="text-(--color-gold) text-xs font-bold tracking-wider">DIVINE</span>
+                <span className="text-(--color-gold) text-xs font-bold tracking-wider">WRATH</span>
+              </div>
             </h1>
 
-            {/* Center: Phase */}
-            <span className="text-(--color-gold) text-sm font-semibold tracking-widest">
+            {/* Center: Phase (absolute centered) */}
+            <span className="absolute left-1/2 -translate-x-1/2 text-(--color-gold) text-sm font-semibold tracking-widest">
               {getPhaseDisplay()}
             </span>
 
-            {/* Right: Room code (lobby) or Round/Turn (in game) */}
-            <div className="text-right">
-              {room.phase === 'lobby' ? (
+            {/* Right: Room code (lobby) or Volume */}
+            <div className="flex items-center gap-3">
+              {room.phase === 'lobby' && (
                 <span className="text-xs font-mono text-(--color-gold)">{room.code}</span>
-              ) : (
-                <div className="flex flex-col items-end text-xs">
-                  <span className="text-(--color-ink-secondary)">
-                    R<span className="text-(--color-gold) font-semibold">{room.currentRound}</span>/{room.totalRounds}
-                  </span>
-                  <span className="text-(--color-ink-muted)">
-                    T<span className="text-(--color-ink-secondary)">{room.turn}</span>/3
-                  </span>
-                </div>
               )}
+              <VolumeControl
+                volume={volume}
+                isMuted={isMuted}
+                onVolumeChange={setVolume}
+              />
             </div>
           </div>
         </header>
       )}
 
       {/* Main content */}
-      <main className="flex-1 max-w-md mx-auto px-4 py-6 w-full">
+      <main className="flex-1 max-w-md mx-auto px-4 py-6 w-full relative">
+        {/* Volume control when no room (main menu) - inside content container */}
+        {!room && (
+          <div className="absolute top-2 right-0 z-10">
+            <VolumeControl
+              volume={volume}
+              isMuted={isMuted}
+              onVolumeChange={setVolume}
+            />
+          </div>
+        )}
         {room?.phase === 'round_transition' && roundResult && currentPlayer ? (
           <RoundTransition
             room={room}
             currentPlayer={currentPlayer}
             roundResult={roundResult}
             onGodChoice={submitGodChoice}
+            onReady={readyForNextRound}
           />
         ) : inGame ? (
           <Game
@@ -152,6 +182,7 @@ export default function App() {
             error={error}
             onCreateRoom={createRoom}
             onJoinRoom={joinRoom}
+            onLeaveRoom={leaveRoom}
             onToggleReady={toggleReady}
             onStartGame={startGame}
             onSetRoundConfig={setRoundConfig}

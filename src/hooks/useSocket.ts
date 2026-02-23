@@ -93,6 +93,14 @@ export function useSocket() {
       setRoom(room);
     });
 
+    socket.on('room_left', () => {
+      setRoom(null);
+      setError(null);
+      setGameResult(null);
+      setLastAttack(null);
+      setRoundResult(null);
+    });
+
     socket.on('error', ({ message }) => {
       setError(message);
     });
@@ -121,6 +129,12 @@ export function useSocket() {
     socketRef.current?.emit('join_room', { roomCode, playerName, avatar });
   }, []);
 
+  const leaveRoom = useCallback(() => {
+    if (room) {
+      socketRef.current?.emit('leave_room', { roomCode: room.code });
+    }
+  }, [room]);
+
   const toggleReady = useCallback(() => {
     if (room) {
       socketRef.current?.emit('toggle_ready', { roomCode: room.code });
@@ -136,6 +150,12 @@ export function useSocket() {
   const submitGodChoice = useCallback((choice: 'stay' | 'cede') => {
     if (room) {
       socketRef.current?.emit('god_choice', { roomCode: room.code, choice });
+    }
+  }, [room]);
+
+  const readyForNextRound = useCallback(() => {
+    if (room) {
+      socketRef.current?.emit('ready_for_next_round', { roomCode: room.code });
     }
   }, [room]);
 
@@ -216,9 +236,11 @@ export function useSocket() {
     roundResult,
     createRoom,
     joinRoom,
+    leaveRoom,
     toggleReady,
     setRoundConfig,
     submitGodChoice,
+    readyForNextRound,
     startGame,
     selectPosition,
     submitClaim,

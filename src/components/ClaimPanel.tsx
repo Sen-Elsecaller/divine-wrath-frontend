@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
 import type { ClaimTypeId } from '../hooks/useSocket';
+import { POINTS } from '../shared/constants';
 
 interface Player {
   id: string;
@@ -83,6 +84,7 @@ export function ClaimPanel({
   const needsValue = selectedClaimType === 'row' || selectedClaimType === 'column';
 
   const canSubmit = selectedClaimType && (!needsValue || selectedClaimValue) && selectedTargetId && !isClaimTaken && !isSubmitting;
+  const isSelfClaim = selectedTargetId === currentPlayerId;
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -95,6 +97,7 @@ export function ClaimPanel({
             const isSelf = player.id === currentPlayerId;
             // Cannot claim adjacent to yourself
             const isDisabled = isSelf && selectedClaimType === 'adjacent';
+            const showBonusGlow = isSelf && !isDisabled;
             return (
               <button
                 key={player.id}
@@ -107,7 +110,8 @@ export function ClaimPanel({
                     ? 'bg-(--color-surface)/50 border-(--color-border)/50 text-(--color-ink-muted) cursor-not-allowed opacity-50'
                     : isSelected
                       ? 'bg-(--color-gold)/20 border-(--color-gold) text-(--color-gold)'
-                      : 'bg-(--color-surface) border-(--color-border) text-(--color-ink-secondary) hover:border-(--color-gold)/50'
+                      : 'bg-(--color-surface) border-(--color-border) text-(--color-ink-secondary) hover:border-(--color-gold)/50',
+                  showBonusGlow && 'shadow-[0_4px_12px_-2px_var(--color-cyan-glow)] border-b-2 border-b-(--color-cyan)'
                 )}
               >
                 {player.name.toUpperCase()}
@@ -157,7 +161,7 @@ export function ClaimPanel({
                   onClick={() => onSelectValue(value)}
                   className={clsx(
                     'w-10 h-10 rounded-lg transition-all text-sm font-mono font-medium',
-                    'border',
+                    'flex items-center justify-center border',
                     isSelected
                       ? 'bg-(--color-gold)/20 border-(--color-gold) text-(--color-gold)'
                       : 'bg-(--color-bg) border-(--color-border) text-(--color-ink-muted) hover:border-(--color-gold)/50'
@@ -198,7 +202,12 @@ export function ClaimPanel({
             GENERATING PROOF...
           </span>
         ) : (
-          'EXECUTE CLAIM'
+          <span className="flex items-center justify-center gap-2">
+            EXECUTE CLAIM
+            {isSelfClaim && (
+              <span className="text-(--color-cyan) font-mono">(+{POINTS.TRUE_SELF_CLAIM})</span>
+            )}
+          </span>
         )}
       </button>
     </div>

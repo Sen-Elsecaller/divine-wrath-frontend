@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { clsx } from 'clsx';
+import { Eye } from 'lucide-react';
 import { Grid } from './Grid';
 import { ClaimPanel } from './ClaimPanel';
 import { ScoreBoard } from './ScoreBoard';
@@ -47,6 +48,25 @@ export function Game({
   // ZK Proof state
   const [isGeneratingProof, setIsGeneratingProof] = useState(false);
   const [proofError, setProofError] = useState<string | null>(null);
+
+  // Verification state (for ZheK animation)
+  const [verifyingClaimId, setVerifyingClaimId] = useState<string | null>(null);
+
+  // Clear verifying state when claim gets verified
+  useEffect(() => {
+    if (verifyingClaimId) {
+      const claim = room.claims.find(c => c.id === verifyingClaimId);
+      if (claim?.verified) {
+        setVerifyingClaimId(null);
+      }
+    }
+  }, [room.claims, verifyingClaimId]);
+
+  // Wrapper for verify that sets loading state
+  const handleVerifyClaim = useCallback((claimId: string) => {
+    setVerifyingClaimId(claimId);
+    onVerifyClaim(claimId);
+  }, [onVerifyClaim]);
 
   // Attack message visibility (auto-hide after 3 seconds)
   const [showAttackMessage, setShowAttackMessage] = useState(false);
@@ -317,6 +337,16 @@ export function Game({
 
   return (
     <div className="flex flex-col gap-6 max-w-md mx-auto animate-fade-in">
+      {/* Scores */}
+      <ScoreBoard
+          scores={room.scores}
+          compact
+          currentPlayerId={currentPlayer.id}
+          currentRound={room.currentRound}
+          totalRounds={room.totalRounds}
+          currentTurn={room.turn}
+        />
+
       {/* Grid */}
       <Grid
         onCellClick={handleCellClick}
@@ -425,7 +455,8 @@ export function Game({
                 isGod={isGod}
                 canVerify={true}
                 verificationsRemaining={room.verificationsRemaining}
-                onVerify={onVerifyClaim}
+                verifyingClaimId={verifyingClaimId}
+                onVerify={handleVerifyClaim}
               />
             </div>
 
@@ -456,7 +487,7 @@ export function Game({
                 isGod={false}
                 canVerify={false}
                 verificationsRemaining={room.verificationsRemaining}
-                onVerify={onVerifyClaim}
+                verifyingClaimId={verifyingClaimId}
               />
             </div>
           </div>
@@ -470,7 +501,6 @@ export function Game({
             isGod={isGod}
             canVerify={false}
             verificationsRemaining={room.verificationsRemaining}
-            onVerify={onVerifyClaim}
           />
         )}
       </div>
@@ -486,64 +516,78 @@ interface ClaimsListProps {
   isGod?: boolean;
   canVerify?: boolean;
   verificationsRemaining?: number;
+  verifyingClaimId?: string | null;
   onVerify?: (claimId: string) => void;
 }
 
-function ClaimsList({ claims, currentTurn, isGod, canVerify, verificationsRemaining, onVerify }: ClaimsListProps) {
+function ClaimsList({ claims, currentTurn, isGod, canVerify, verificationsRemaining, verifyingClaimId, onVerify }: ClaimsListProps) {
   if (claims.length === 0) return null;
 
   // Group claims by turn
   const currentTurnClaims = claims.filter(c => c.turn === currentTurn);
   const previousClaims = claims.filter(c => c.turn < currentTurn);
 
-  const renderClaim = (claim: Claim, isPrevious: boolean = false) => (
-    <div
-      key={claim.id}
-      className={clsx(
-        'flex items-center justify-between px-3 py-2.5 rounded-lg border',
-        isPrevious
-          ? 'bg-(--color-surface)/50 border-(--color-border)/50'
-          : 'bg-(--color-surface) border-(--color-border)'
-      )}
-    >
-      <div className="flex-1 min-w-0">
-        <span className="text-(--color-cyan) text-sm font-medium">
-          {claim.playerName}
-        </span>
-        <span className="text-(--color-ink-muted) text-sm">
-          {' → '}
-        </span>
-        <span className={clsx(
-          'text-sm',
-          isPrevious ? 'text-(--color-ink-muted)' : 'text-(--color-ink-secondary)'
-        )}>
-          {formatClaimText(claim.claimType, claim.claimValue, claim.targetPlayerName)}
-        </span>
-      </div>
+  const renderClaim = (claim: Claim, isPrevious: boolean = false) => {
+    const isVerifying = verifyingClaimId === claim.id;
 
-      {claim.verified ? (
-        <span className={clsx(
-          'text-xs font-semibold px-2 py-1 rounded',
-          claim.isTrue
-            ? 'bg-(--color-cyan)/20 text-(--color-cyan)'
-            : 'bg-(--color-danger)/20 text-(--color-danger)'
-        )}>
-          {claim.isTrue ? '✓ TRUE' : '✗ FALSE'}
-        </span>
-      ) : isGod && canVerify && verificationsRemaining && verificationsRemaining > 0 && onVerify ? (
-        <button
-          onClick={() => onVerify(claim.id)}
-          className="text-xs font-semibold px-3 py-1.5 rounded bg-(--color-gold)/20 text-(--color-gold) border border-(--color-gold) hover:bg-(--color-gold)/30 transition-all"
-        >
-          🔍 VERIFY
-        </button>
-      ) : (
-        <span className="text-(--color-ink-muted) text-xs italic">
-          unverified
-        </span>
-      )}
-    </div>
-  );
+    return (
+      <div
+        key={claim.id}
+        className={clsx(
+          'flex items-center justify-between px-3 py-2.5 rounded-lg border',
+          isPrevious
+            ? 'bg-(--color-surface)/50 border-(--color-border)/50'
+            : 'bg-(--color-surface) border-(--color-border)',
+          isVerifying && 'border-(--color-gold)/50'
+        )}
+      >
+        <div className="flex-1 min-w-0">
+          <span className="text-(--color-ink-muted) text-base font-medium">
+            {claim.playerName}
+          </span>
+          <span className="text-(--color-ink-muted) text-lg">
+            {' → '}
+          </span>
+          <span className={clsx(
+            'text-lg',
+            isPrevious ? 'text-(--color-cyan)' : 'text-(--color-ink-secondary)'
+          )}>
+            {formatClaimText(claim.claimType, claim.claimValue, claim.targetPlayerName)}
+          </span>
+        </div>
+
+        {claim.verified ? (
+          <span className={clsx(
+            'flex items-center gap-1 text-base font-semibold px-2 py-1 rounded',
+            claim.isTrue
+              ? 'bg-(--color-cyan)/20 text-(--color-cyan)'
+              : 'bg-(--color-danger)/20 text-(--color-danger)'
+          )}>
+            <Eye size={12} />
+            {claim.isTrue ? 'Truth' : 'Deceit'}
+          </span>
+        ) : isVerifying ? (
+          <span className="flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded bg-(--color-gold)/10 text-(--color-gold)">
+            <Eye size={12} className="animate-pulse" />
+            <span className="animate-pulse">Invoking ZheK...</span>
+          </span>
+        ) : isGod && canVerify && verificationsRemaining && verificationsRemaining > 0 && onVerify ? (
+          <button
+            onClick={() => onVerify(claim.id)}
+            title="Invoke ZheK's judgment"
+            className="group flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded bg-(--color-gold)/20 text-(--color-gold) border border-(--color-gold) hover:bg-(--color-gold)/30 transition-all"
+          >
+            <Eye size={12} className="group-hover:scale-110 transition-transform" />
+            VERIFY
+          </button>
+        ) : (
+          <span className="text-(--color-ink-muted) text-xs italic">
+            unverified
+          </span>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-3">

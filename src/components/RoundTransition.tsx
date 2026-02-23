@@ -7,6 +7,7 @@ interface RoundTransitionProps {
   currentPlayer: Player;
   roundResult: RoundResult;
   onGodChoice: (choice: 'stay' | 'cede') => void;
+  onReady: () => void;
 }
 
 export function RoundTransition({
@@ -14,9 +15,16 @@ export function RoundTransition({
   currentPlayer,
   roundResult,
   onGodChoice,
+  onReady,
 }: RoundTransitionProps) {
   const isGod = currentPlayer.role === 'god';
   const isMyChoice = isGod && roundResult.needsGodChoice;
+  const amReady = room.readyForNextRound?.includes(currentPlayer.id) ?? false;
+  const readyCount = room.readyForNextRound?.length ?? 0;
+  const totalPlayers = room.players.length;
+
+  // Show ready button unless: God needs to choose (they use stay/cede buttons instead)
+  const showReadyButton = !(isGod && roundResult.needsGodChoice);
 
   return (
     <div className="flex flex-col items-center gap-6 p-6 animate-fade-in">
@@ -92,20 +100,33 @@ export function RoundTransition({
       )}
 
       {/* Waiting for God's choice */}
-      {!isGod && roundResult.needsGodChoice && (
+      {!isGod && roundResult.needsGodChoice && !room.godChoice && (
         <div className="flex items-center gap-2 text-(--color-ink-muted)">
           <span className="animate-spin">&#9696;</span>
           <span>Waiting for God's decision...</span>
         </div>
       )}
 
-      {/* Auto-transition message (mortals won) */}
-      {!roundResult.needsGodChoice && (
-        <div className="flex items-center gap-2 text-(--color-cyan)">
-          <span className="animate-pulse">&#9679;</span>
-          <span>Next round starting...</span>
-        </div>
+      {/* Ready button */}
+      {showReadyButton && (
+        <button
+          onClick={onReady}
+          disabled={amReady}
+          className={clsx(
+            'px-8 py-3 rounded-lg font-semibold uppercase tracking-wide transition-all border-2',
+            amReady
+              ? 'bg-transparent border-(--color-border) text-(--color-ink-muted) cursor-default'
+              : 'bg-(--color-gold)/20 border-(--color-gold) text-(--color-gold) hover:bg-(--color-gold)/30'
+          )}
+        >
+          {amReady ? 'Ready' : 'Continue'}
+        </button>
       )}
+
+      {/* Ready count */}
+      <div className="flex items-center gap-2 text-(--color-ink-muted) text-sm">
+        <span>{readyCount}/{totalPlayers} ready</span>
+      </div>
 
       {/* Next round info */}
       <p className="text-xs text-(--color-ink-muted)">
