@@ -86,71 +86,75 @@ export function VolumeControl({
       <div
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         className={clsx(
-          'absolute top-full right-0 mt-2 flex flex-col items-center gap-2 px-3 py-3 z-50',
-          'bg-(--color-surface) border border-(--color-border) rounded-lg shadow-lg',
+          'absolute top-full right-0 pt-2 z-50',
           'transition-all duration-200 origin-top',
           isOpen
             ? 'opacity-100 scale-100'
             : 'opacity-0 scale-95 pointer-events-none'
         )}
       >
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={isMuted ? 0 : volume}
-          onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-          className="volume-slider h-20 cursor-pointer"
-          style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
-          aria-label="Volume"
-        />
-        <style>{`
-          .volume-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            background: transparent;
-            width: 8px;
-            touch-action: none;
-          }
-          .volume-slider:focus {
-            outline: none;
-          }
-          /* Track */
-          .volume-slider::-webkit-slider-runnable-track {
-            background: var(--color-border);
-            border-radius: 4px;
-            height: 100%;
-            width: 4px;
-          }
-          .volume-slider::-moz-range-track {
-            background: var(--color-border);
-            border-radius: 4px;
-            height: 100%;
-            width: 4px;
-          }
-          /* Thumb */
-          .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            background: var(--color-gold);
-            border-radius: 50%;
-            width: 14px;
-            height: 14px;
-            margin-left: -5px;
-          }
-          .volume-slider::-moz-range-thumb {
-            background: var(--color-gold);
-            border-radius: 50%;
-            border: none;
-            width: 14px;
-            height: 14px;
-          }
-        `}</style>
-        <span className="text-xs text-(--color-ink-muted) font-mono">
-          {Math.round((isMuted ? 0 : volume) * 100)}%
-        </span>
+        {/* Inner container with actual styling */}
+        <div className="flex flex-col items-center gap-2 px-3 py-3 bg-(--color-surface) border border-(--color-border) rounded-lg shadow-lg">
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={isMuted ? 0 : volume}
+            onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+            className="volume-slider h-20 cursor-pointer"
+            style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
+            aria-label="Volume"
+          />
+          <style>{`
+            .volume-slider {
+              -webkit-appearance: none;
+              appearance: none;
+              background: transparent;
+              width: 8px;
+              touch-action: none;
+            }
+            .volume-slider:focus {
+              outline: none;
+            }
+            /* Track */
+            .volume-slider::-webkit-slider-runnable-track {
+              background: var(--color-border);
+              border-radius: 4px;
+              height: 100%;
+              width: 4px;
+            }
+            .volume-slider::-moz-range-track {
+              background: var(--color-border);
+              border-radius: 4px;
+              height: 100%;
+              width: 4px;
+            }
+            /* Thumb */
+            .volume-slider::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              appearance: none;
+              background: var(--color-gold);
+              border-radius: 50%;
+              width: 14px;
+              height: 14px;
+              margin-left: -5px;
+            }
+            .volume-slider::-moz-range-thumb {
+              background: var(--color-gold);
+              border-radius: 50%;
+              border: none;
+              width: 14px;
+              height: 14px;
+            }
+          `}</style>
+          <span className="text-xs text-(--color-ink-muted) font-mono">
+            {Math.round((isMuted ? 0 : volume) * 100)}%
+          </span>
+        </div>
       </div>
     </div>
   );

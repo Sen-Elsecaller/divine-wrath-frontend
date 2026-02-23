@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { clsx } from 'clsx';
 import type { Room, Player, AvatarConfig } from '../hooks/useSocket';
 import { usePlayerData } from '../hooks/usePlayerData';
@@ -34,7 +34,27 @@ export function Lobby({
   const [roomCode, setRoomCode] = useState('');
   const [mode, setMode] = useState<'menu' | 'join'>('menu');
   const [isExiting, setIsExiting] = useState(false);
+  const [copied, setCopied] = useState(false);
   const pendingActionRef = useRef<(() => void) | null>(null);
+
+  // Copy room code to clipboard
+  const copyRoomCode = useCallback(async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = code;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  }, []);
 
   // Handle transition with exit animation
   const transitionTo = (action: () => void) => {
@@ -82,10 +102,20 @@ export function Lobby({
       <div className="flex flex-col gap-6 animate-slide-in-from-top">
         {/* Room header */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--color-surface) border border-(--color-border)">
-            <span className="text-xs text-(--color-ink-muted)">ROOM</span>
-            <span className="text-sm font-mono text-(--color-gold)">{room.code}</span>
-          </div>
+          <button
+            onClick={() => copyRoomCode(room.code)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--color-surface) border border-(--color-border) hover:border-(--color-gold)/50 transition-all active:scale-95"
+          >
+            <span className="text-xs text-(--color-ink-muted)">
+              {copied ? 'COPIED!' : 'ROOM'}
+            </span>
+            <span className={clsx(
+              'text-sm font-mono transition-colors',
+              copied ? 'text-(--color-cyan)' : 'text-(--color-gold)'
+            )}>
+              {room.code}
+            </span>
+          </button>
           {room.players.length < 4 && (
             <button
               onClick={() => {

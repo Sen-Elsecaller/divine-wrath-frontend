@@ -115,13 +115,13 @@ export function Grid({
                   'bg-(--color-gold)/10':
                     isHighlighted && !isSelected && !isMyPosition && !isHit,
 
-                  // Selected by God for attack
+                  // Selected by God for attack (visible to all)
                   'bg-(--color-danger)/20 ring-2 ring-inset ring-(--color-danger)':
-                    isSelected && isGod,
+                    isSelected && !showPositionSelect,
 
-                  // Selected by Mortal for position
+                  // Selected by Mortal for position (setup phase)
                   'bg-(--color-gold)/20 ring-2 ring-inset ring-(--color-gold)':
-                    isSelected && !isGod,
+                    isSelected && !isGod && showPositionSelect,
 
 
                   // Attacked and missed

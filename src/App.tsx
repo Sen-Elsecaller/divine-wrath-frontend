@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSocket } from './hooks/useSocket';
 import { useAudio } from './hooks/useAudio';
 import { Lobby } from './components/Lobby';
@@ -6,6 +6,7 @@ import { Game } from './components/Game';
 import { RoundTransition } from './components/RoundTransition';
 import { ParticleBackground } from './components/ParticleBackground';
 import { VolumeControl } from './components/VolumeControl';
+import { SettingsMenu } from './components/SettingsMenu';
 
 export default function App() {
   const autoJoinedRef = useRef(false);
@@ -29,12 +30,20 @@ export default function App() {
     selectPosition,
     submitClaim,
     attackCell,
+    selectGodCell,
     verifyClaim,
     submitClaimBlockchain,
     clearBlockchainResult,
   } = useSocket();
 
-  const { playTrack, volume, setVolume, isMuted, tryResume } = useAudio();
+  const { playTrack, volume, setVolume, isMuted, toggleMute, tryResume } = useAudio();
+
+  // Settings menu state
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Effects volume (placeholder until useEffects is implemented)
+  const [effectsVolume, setEffectsVolume] = useState(0.5);
+  const [effectsMuted, setEffectsMuted] = useState(false);
 
   // Determine which track to play based on game state
   useEffect(() => {
@@ -108,35 +117,49 @@ export default function App() {
       <ParticleBackground variant={getBackgroundVariant()} />
 
 
+      {/* Settings menu - outside header for proper z-index */}
+      {room && (
+        <SettingsMenu
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          musicVolume={volume}
+          musicMuted={isMuted}
+          onMusicVolumeChange={setVolume}
+          onMusicMuteToggle={toggleMute}
+          effectsVolume={effectsVolume}
+          effectsMuted={effectsMuted}
+          onEffectsVolumeChange={setEffectsVolume}
+          onEffectsMuteToggle={() => setEffectsMuted(prev => !prev)}
+        />
+      )}
+
       {/* Header - only visible when in a room */}
       {room && (
-        <header className="border-b border-(--color-border) py-3 animate-header-expand">
+        <header className="border-b border-(--color-border) py-3 animate-header-expand relative">
           <div className="max-w-md mx-auto px-4 flex items-center justify-between relative">
-            {/* Left: Title (stacked) */}
-            <h1 className="flex items-center gap-1.5 font-[var(--font-display)]">
+            {/* Left: Title (clickable to open settings) */}
+            <button
+              onClick={() => setIsSettingsOpen(prev => !prev)}
+              className="flex items-center gap-1.5 font-[var(--font-display)] bg-transparent border-none p-0 cursor-pointer"
+            >
               <span className="text-(--color-gold) text-lg">⚡</span>
               <div className="flex flex-col leading-none">
                 <span className="text-(--color-gold) text-xs font-bold tracking-wider">DIVINE</span>
                 <span className="text-(--color-gold) text-xs font-bold tracking-wider">WRATH</span>
               </div>
-            </h1>
+            </button>
 
-            {/* Center: Phase (absolute centered) */}
-            <span className="absolute left-1/2 -translate-x-1/2 text-(--color-gold) text-sm font-semibold tracking-widest">
-              {getPhaseDisplay()}
-            </span>
+            {/* Center: Phase (absolute centered) - hidden when settings open */}
+            {!isSettingsOpen && (
+              <span className="absolute left-1/2 -translate-x-1/2 text-(--color-gold) text-sm font-semibold tracking-widest">
+                {getPhaseDisplay()}
+              </span>
+            )}
 
-            {/* Right: Room code (lobby) or Volume */}
-            <div className="flex items-center gap-3">
-              {room.phase === 'lobby' && (
-                <span className="text-xs font-mono text-(--color-gold)">{room.code}</span>
-              )}
-              <VolumeControl
-                volume={volume}
-                isMuted={isMuted}
-                onVolumeChange={setVolume}
-              />
-            </div>
+            {/* Right: Room code (lobby only) */}
+            {room.phase === 'lobby' && !isSettingsOpen && (
+              <span className="text-xs font-mono text-(--color-gold)">{room.code}</span>
+            )}
           </div>
         </header>
       )}
@@ -171,6 +194,7 @@ export default function App() {
             onSelectPosition={selectPosition}
             onSubmitClaim={submitClaim}
             onAttackCell={attackCell}
+            onSelectGodCell={selectGodCell}
             onVerifyClaim={verifyClaim}
             onSubmitClaimBlockchain={submitClaimBlockchain}
             onClearBlockchainResult={clearBlockchainResult}

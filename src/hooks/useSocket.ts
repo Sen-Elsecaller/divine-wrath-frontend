@@ -194,6 +194,12 @@ export function useSocket() {
     }
   }, [room]);
 
+  const selectGodCell = useCallback((cell: number | null) => {
+    if (room) {
+      socketRef.current?.emit('god_select_cell', { roomCode: room.code, cell });
+    }
+  }, [room]);
+
   const verifyClaim = useCallback((claimId: string) => {
     if (room) {
       socketRef.current?.emit('verify_claim', { roomCode: room.code, claimId });
@@ -245,6 +251,7 @@ export function useSocket() {
     selectPosition,
     submitClaim,
     attackCell,
+    selectGodCell,
     verifyClaim,
     submitClaimBlockchain,
     clearBlockchainResult,

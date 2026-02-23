@@ -23,6 +23,7 @@ interface GameProps {
   onSelectPosition: (position: number) => void;
   onSubmitClaim: (claimType: ClaimTypeId, claimValue: number | boolean, targetPlayerId: string, zkProof?: { proof: object; publicSignals: string[]; isTrue: boolean }) => void;
   onAttackCell: (cell: number) => void;
+  onSelectGodCell: (cell: number | null) => void;
   onVerifyClaim: (claimId: string) => void;
   onSubmitClaimBlockchain: (claimId: string, proof: object, publicSignals: string[]) => void;
   onClearBlockchainResult: () => void;
@@ -37,10 +38,10 @@ export function Game({
   onSelectPosition,
   onSubmitClaim,
   onAttackCell,
+  onSelectGodCell,
   onVerifyClaim,
   onClearBlockchainResult,
 }: GameProps) {
-  const [selectedCell, setSelectedCell] = useState<number | null>(null);
   const [selectedClaimType, setSelectedClaimType] = useState<ClaimTypeId | null>(null);
   const [selectedClaimValue, setSelectedClaimValue] = useState<number | null>(null);
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
@@ -183,15 +184,17 @@ export function Game({
     if (room.phase === 'setup' && isMortal && !myPosition) {
       onSelectPosition(cell);
     } else if (room.phase === 'deduction' && isGod) {
-      setSelectedCell(cell);
+      // Toggle selection: click same cell to deselect
+      const newCell = room.godSelectedCell === cell ? null : cell;
+      onSelectGodCell(newCell);
     }
   };
 
   // Handle attack confirmation
   const handleAttack = () => {
-    if (selectedCell !== null) {
-      onAttackCell(selectedCell);
-      setSelectedCell(null);
+    if (room.godSelectedCell !== null && room.godSelectedCell !== undefined) {
+      onAttackCell(room.godSelectedCell);
+      // Server will clear godSelectedCell after attack
     }
   };
 
@@ -350,7 +353,7 @@ export function Game({
       {/* Grid */}
       <Grid
         onCellClick={handleCellClick}
-        selectedCell={selectedCell}
+        selectedCell={room.godSelectedCell}
         attackedCells={attackedCells}
         hitCells={hitCells}
         deadPlayers={deadPlayersForGrid}
@@ -460,7 +463,7 @@ export function Game({
               />
             </div>
 
-            {selectedCell !== null && (
+            {room.godSelectedCell != null && (
               <button
                 onClick={handleAttack}
                 className="w-full py-3 rounded-lg font-semibold uppercase tracking-wide transition-all border-2 bg-(--color-danger)/20 border-(--color-danger) text-(--color-danger) hover:bg-(--color-danger)/30"
