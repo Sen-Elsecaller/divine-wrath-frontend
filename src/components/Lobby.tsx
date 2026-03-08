@@ -8,7 +8,7 @@ interface LobbyProps {
   room: Room | null;
   currentPlayer: Player | null;
   error: string | null;
-  onCreateRoom: (playerName: string, avatar?: AvatarConfig) => void;
+  onCreateRoom: (playerName: string, avatar?: AvatarConfig, zkEnabled?: boolean) => void;
   onJoinRoom: (roomCode: string, playerName: string, avatar?: AvatarConfig) => void;
   onLeaveRoom: () => void;
   onToggleReady: () => void;
@@ -18,6 +18,9 @@ interface LobbyProps {
 
 // Animation duration in ms
 const TRANSITION_DURATION = 250;
+
+// localStorage key for ZK mode preference
+const ZK_MODE_KEY = 'divine-wrath-zk-mode';
 
 export function Lobby({
   room,
@@ -36,6 +39,28 @@ export function Lobby({
   const [isExiting, setIsExiting] = useState(false);
   const [copied, setCopied] = useState(false);
   const pendingActionRef = useRef<(() => void) | null>(null);
+
+  // ZK mode preference (persisted in localStorage)
+  const [zkEnabled, setZkEnabled] = useState(() => {
+    try {
+      return localStorage.getItem(ZK_MODE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  // Persist ZK mode preference
+  const toggleZkMode = useCallback(() => {
+    setZkEnabled(prev => {
+      const newValue = !prev;
+      try {
+        localStorage.setItem(ZK_MODE_KEY, String(newValue));
+      } catch {
+        // Ignore localStorage errors
+      }
+      return newValue;
+    });
+  }, []);
 
   // Copy room code to clipboard
   const copyRoomCode = useCallback(async (code: string) => {
@@ -68,7 +93,7 @@ export function Lobby({
 
   const handleCreate = () => {
     if (playerData.name.trim()) {
-      transitionTo(() => onCreateRoom(playerData.name.trim(), playerData.avatar));
+      transitionTo(() => onCreateRoom(playerData.name.trim(), playerData.avatar, zkEnabled));
     }
   };
 
@@ -343,6 +368,25 @@ export function Lobby({
           1 God vs 3 Mortals
         </p>
       </div>
+
+      {/* ZK Mode toggle */}
+      <button
+        onClick={toggleZkMode}
+        className={clsx(
+          'flex items-center justify-center gap-2 px-4 py-2 rounded-lg border text-xs transition-all',
+          zkEnabled
+            ? 'border-(--color-cyan) bg-(--color-cyan)/10 text-(--color-cyan)'
+            : 'border-(--color-border) bg-transparent text-(--color-ink-muted) hover:border-(--color-ink-muted)'
+        )}
+      >
+        <span className={clsx(
+          'w-3 h-3 rounded-full transition-colors',
+          zkEnabled ? 'bg-(--color-cyan)' : 'bg-(--color-ink-muted)/30'
+        )} />
+        <span className="uppercase tracking-wider font-medium">
+          {zkEnabled ? 'ZK Mode On' : 'ZK Mode'}
+        </span>
+      </button>
 
       {/* Action buttons */}
       <div className="flex flex-col gap-3">

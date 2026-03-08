@@ -121,8 +121,8 @@ export function useSocket() {
     };
   }, []);
 
-  const createRoom = useCallback((playerName: string, avatar?: AvatarConfig) => {
-    socketRef.current?.emit('create_room', { playerName, avatar });
+  const createRoom = useCallback((playerName: string, avatar?: AvatarConfig, zkEnabled?: boolean) => {
+    socketRef.current?.emit('create_room', { playerName, avatar, zkEnabled: zkEnabled ?? false });
   }, []);
 
   const joinRoom = useCallback((roomCode: string, playerName: string, avatar?: AvatarConfig) => {

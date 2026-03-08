@@ -198,7 +198,7 @@ export function Game({
     }
   };
 
-  // Handle claim submission with ZK proof generation
+  // Handle claim submission (with optional ZK proof generation if zkEnabled)
   const handleClaim = async () => {
     if (!selectedTargetId || !selectedClaimType || isCurrentClaimTaken || isGeneratingProof) return;
 
@@ -214,7 +214,16 @@ export function Game({
       return;
     }
 
-    // Always generate ZK proof
+    // If ZK mode is disabled, submit claim without proof
+    if (!room.zkEnabled) {
+      onSubmitClaim(selectedClaimType, valueToSubmit, selectedTargetId);
+      setSelectedClaimType(null);
+      setSelectedClaimValue(null);
+      setSelectedTargetId(null);
+      return;
+    }
+
+    // ZK mode enabled - generate proof
     setIsGeneratingProof(true);
     setProofError(null);
 
