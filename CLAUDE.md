@@ -4,9 +4,15 @@
 
 Juego de deducción social hecho para una hackathon: 3 "Mortals" se esconden de un "God" en un tablero de 3x3. Los mortales hacen *claims* sobre su posición ("estoy en la fila 2", "soy adyacente al jugador X") que el God puede verificar como verdaderas o falsas sin aprender la posición real — por default con lógica simple del server, opcionalmente con **zero-knowledge proofs** (Circom/Groth16 vía `snarkjs`) generadas en el navegador y verificadas on-chain (ver "Flujo de ZK proofs" abajo).
 
-Este repo es uno de 3 hermanos, clonados juntos en una carpeta padre (`divine-wrath/`, no es repo git):
+Este repo es uno de varios hermanos, clonados juntos en una carpeta padre (`divine-wrath/`, no es repo git):
 - [`divine-wrath-server`](https://github.com/Sen-Elsecaller/divine-wrath-server) — Socket.io + lógica de juego + relayer on-chain. **Este frontend no funciona solo** — necesita el server corriendo (`VITE_SERVER_URL`, default `http://localhost:3001`).
-- `divine-wrath-contracts` (privado) — contratos Soroban + circuito Circom. **`docs/CLAUDE.md` ahí es el hub de contexto compartido de los 3 repos** (reglas de trabajo, arquitectura completa, gotchas, bitácora de sesiones) — leerlo antes de asumir algo que cruce las 3 capas.
+- `divine-wrath-contracts` (privado) — contratos Soroban + circuito Circom. **`docs/CLAUDE.md` ahí es el hub de contexto compartido de las 3 capas** (arquitectura completa, gotchas, bitácora de sesiones) — leerlo antes de asumir algo que cruce las capas. Las **reglas de trabajo** viven en `divine-wrath/CLAUDE.md`, la raíz de la carpeta padre.
+
+> ## Este repo está congelado
+>
+> El juego se rehace en Godot 4.7 / C# (`divine-wrath-godot`, ver el plan en el hub). Este frontend sigue deployado en Vercel y va a seguir siendo **la única versión jugable por link**, porque Godot 4.7 no soporta C# en web export. Pero **no se invierte tiempo en limpiarlo, refactorizarlo ni extenderlo** — el trabajo nuevo va al port.
+>
+> Consecuencia concreta: **los pendientes que este documento anota más abajo no se resuelven** — la duplicación de constantes de claims, el `eslint.config.js` que falta, los dos lockfiles y el puerto de dev 3000 vs 5173. Siguen documentados porque describen el repo tal como está, no porque haya que arreglarlos. Si vas a tocar algo igual, leelos; si venías a limpiarlos, no.
 
 ## Stack y comandos
 
@@ -80,14 +86,11 @@ Antes de agregar o modificar algo relacionado a claim types, revisar los tres lu
 
 ## Reglas para Claude
 
-1. **Nunca push sin preguntar** — siempre mostrar el commit message y esperar aprobación antes de subir cambios.
-2. **Preguntar antes de asumir** — ante cualquier duda sobre intención del usuario o sobre implementación, preguntar antes de actuar.
-3. **Fragmentar el trabajo** — tareas pequeñas, una pieza a la vez, en vez de cambios grandes de una sola vez.
-4. **Citar fuentes en el momento** — si una afirmación se basa en documentación externa (Circom, snarkjs, Stellar/Soroban, Socket.io), poner el link inline donde se usa, no solo al final.
-5. **Ante un "¿por qué?" explicar genuinamente** — la prioridad es la explicación técnica real; si además hay una sospecha de corrección de enfoque, agregarla al final sin que opaque la explicación.
-6. **Leer archivos relevantes antes de tocar un módulo** — en particular, antes de tocar algo de claims/tipos compartidos, revisar `src/constants.ts`, `src/shared/constants.ts` y `src/shared/types.ts` juntos (ver duplicación arriba).
-7. **No asumir sin verificar contra el server** — este repo es solo frontend; cualquier afirmación sobre cómo se verifican los claims, se calculan puntajes, o se decide el ganador debe verificarse contra `divine-wrath-server` en vez de inferirse del cliente.
-8. **Estilo de código** — no alinear columnas con espacios extra (variables, objetos, props JSX), no comprimir múltiples statements en una línea, mantener el estilo del archivo que se está editando. Si el archivo no hace algo, tampoco Claude.
-9. **No regenerar ni editar los artifacts de `public/circuits/`** — son binarios compilados; el código fuente del circuito vive en `divine-wrath-contracts/circom/circuits/`, no acá.
-10. **Cambios en gestor de paquetes** — no agregar/actualizar `bun.lock` o `package-lock.json` unilateralmente; preguntar cuál es el que se debe mantener antes de instalar dependencias.
-11. **ZK Mode está en pausa** — no invertir tiempo manteniendo/extendiendo el código de wallet/blockchain (ver arriba) salvo pedido explícito del usuario.
+Las reglas generales (nunca push sin preguntar, fragmentar, preguntar antes de asumir, citar fuentes inline, explicar genuinamente ante un "¿por qué?", estilo de código) están en `divine-wrath/CLAUDE.md`. Lo propio de esta capa:
+
+1. **Este repo está congelado** — ver arriba. Cualquier cambio acá necesita pedido explícito del usuario.
+2. **Leer archivos relevantes antes de tocar un módulo** — en particular, antes de tocar algo de claims o tipos compartidos, revisar `src/constants.ts`, `src/shared/constants.ts` y `src/shared/types.ts` juntos (ver duplicación arriba).
+3. **No asumir sin verificar contra el server** — este repo es solo frontend; cualquier afirmación sobre cómo se verifican los claims, se calculan puntajes o se decide el ganador debe verificarse contra `divine-wrath-server`, no inferirse del cliente.
+4. **No regenerar ni editar los artifacts de `public/circuits/`** — son binarios compilados; el fuente del circuito vive en `divine-wrath-contracts/circom/circuits/`.
+5. **Cambios en gestor de paquetes** — no agregar ni actualizar `bun.lock` o `package-lock.json` unilateralmente; preguntar cuál se mantiene antes de instalar dependencias.
+6. **ZK Mode está en pausa** — no invertir tiempo manteniendo ni extendiendo el código de wallet/blockchain (ver arriba) salvo pedido explícito.
